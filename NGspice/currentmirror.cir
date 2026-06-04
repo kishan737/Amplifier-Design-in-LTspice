@@ -1,0 +1,56 @@
+* CS amplifier biased using NMOS current mirror
+* ID/32768 case, W fixed at ID/128 value
+
+.include tsmc018.lib
+
+.param VDD=1.8
+.param ID=0.0152587890625u
+.param VD=0.9
+.param RDVAL=(VDD-VD)/ID
+
+.param WREF=0.390625u
+.param LREF=1u
+.param WAMP=0.390625u
+.param LAMP=1u
+
+VDD vdd 0 {VDD}
+
+IREF vdd diode {ID}
+
+MREF diode diode 0 0 CMOSN W={WREF} L={LREF}
+
+RD vdd drain {RDVAL}
+MAMP drain diode 0 0 CMOSN W={WAMP} L={LAMP}
+
+VIN diode gate_ac AC 1
+RAC gate_ac 0 1T
+
+.control
+
+op
+
+print v(diode)
+print v(drain)
+print @mref[id]
+print @mamp[id]
+print @mamp[gm]
+print @mamp[gds]
+print @mamp[vgs]
+print @mamp[vds]
+
+let ro = 1/@mamp[gds]
+let rd = 58982400
+let rout = (ro*rd)/(ro+rd)
+let gain = @mamp[gm]*rout
+
+print ro
+print rd
+print rout
+print gain
+
+ac dec 100 1 1G
+plot db(v(drain)/v(diode))
+
+.endc
+
+.end
